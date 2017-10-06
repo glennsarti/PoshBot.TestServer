@@ -9,7 +9,7 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PoshBot.TestServer.Backend.psm1'
+RootModule = 'PoshBot.Example.Backend.psm1'
 
 # Version number of this module.
 ModuleVersion = '0.1.0'
@@ -18,19 +18,19 @@ ModuleVersion = '0.1.0'
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = '8cc71269-5744-47a1-9df0-c7c11970acf5'
+GUID = 'b9151ec5-1c93-4baf-96f0-ae223174ae62'
 
 # Author of this module
-Author = 'Glenn Sarti'
+Author = 'Brandon Olin'
 
 # Company or vendor of this module
 CompanyName = 'Community'
 
 # Copyright statement for this module
-Copyright = '(c) 2017 Glenn Sarti. All rights reserved.'
+Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Test Server backend for PoshBot'
+Description = 'Example backend for PoshBot'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0.0'
@@ -69,9 +69,7 @@ RequiredModules = @('PoshBot')
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @(
-    'New-PoshBotTestServerBackend'
-)
+FunctionsToExport = @()
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
@@ -122,3 +120,4 @@ PrivateData = @{
 # DefaultCommandPrefix = ''
 
 }
+

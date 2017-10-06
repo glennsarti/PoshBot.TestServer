@@ -1,13 +1,10 @@
 
-class TestServerBackend : Backend {
+class ExampleBackend : Backend {
 
     # Constructor
-    TestServerBackend ([string]$Token) {
+    ExampleBackend ([string]$Token) {
         # Implement any needed initialization steps
-        # Example connection settings
-        $conn = [TestServerConnection]::New()
-        $this.Connection = $conn
-    } 
+    }
 
     # Connect to the chat network
     [void]Connect() {

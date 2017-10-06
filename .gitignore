@@ -1,6 +1,1 @@
-# Ignore Module output
 out/*
-
-# Ignore development files
-tmp/
-PoshBotConfig.psd1

@@ -1,7 +1,7 @@
 
-class TestServerConnection : Connection {
+class ExampleConnection : Connection {
 
-    TestServerConnection() {
+    ExampleConnection() {
         # Implement any needed initialization steps
     }
 

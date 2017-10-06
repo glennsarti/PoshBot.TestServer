@@ -7,9 +7,7 @@ param(
     [parameter(ParameterSetName = 'help')]
     [switch]$Help,
 
-    [switch]$UpdateModules,
-
-    [switch]$IgnoreDependencies
+    [switch]$UpdateModules
 )
 
 function Resolve-Module {
@@ -79,9 +77,7 @@ function Resolve-Module {
     }
 }
 
-if (!$IgnoreDependencies) {
-    'BuildHelpers', 'psake' | Resolve-Module -UpdateModules:($PSBoundParameters.ContainsKey('UpdateModules'))
-}
+'BuildHelpers', 'psake' | Resolve-Module -UpdateModules:($PSBoundParameters.ContainsKey('UpdateModules'))
 
 if ($PSBoundParameters.ContainsKey('help')) {
     Get-PSakeScriptTasks -buildFile "$PSScriptRoot\psake.ps1" |
