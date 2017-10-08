@@ -90,22 +90,26 @@ task Compile -depends Clean {
     New-Item -Path $outputModVerDir -ItemType Directory > $null
 
     # Append items to psm1
-    Write-Verbose -Message 'Creating psm1...'
+    Write-Verbose -Message 'Creating psm1 (Header)...'
     $psm1 = New-Item -Path (Join-Path -Path $outputModVerDir -ChildPath "$($ENV:BHProjectName).psm1") -ItemType File
 
     'using module PoshBot' | Out-File -FilePath $psm1 -Encoding utf8 -Append
 
+    Write-Verbose -Message 'Creating psm1 (Classes)...'
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Classes') -File -Recurse |
-        Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
+    Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
 
+    Write-Verbose -Message 'Creating psm1 (Public)...'
     Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Public') -Recurse |
-        Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
+    Get-Content -Raw | Add-Content -Path $psm1 -Encoding UTF8
 
     # Copy over other items
+    Write-Verbose -Message 'Creating psm1 (Manifest)...'
     Copy-Item -Path $env:BHPSModuleManifest -Destination $outputModVerDir
 
     # Set functions to export
     $functions = (Get-ChildItem -Path (Join-Path -Path $sut -ChildPath 'Public')).BaseName
+    Write-Verbose -Message 'Creating psm1 (Update-ModuleManifest)...'
     Update-ModuleManifest -Path (Join-Path -Path $outputModVerDir -ChildPath (Split-Path -Path $env:BHPSModuleManifest -Leaf)) -FunctionsToExport $functions
 
     "    Created compiled module at [$modDir]"

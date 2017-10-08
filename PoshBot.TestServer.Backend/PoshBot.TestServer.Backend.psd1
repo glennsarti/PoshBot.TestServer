@@ -9,28 +9,28 @@
 @{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'PoshBot.Example.Backend.psm1'
+RootModule = 'PoshBot.TestServer.Backend.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.0'
+ModuleVersion = '0.0.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
 
 # ID used to uniquely identify this module
-GUID = 'b9151ec5-1c93-4baf-96f0-ae223174ae62'
+GUID = '128075c9-6edc-401d-9275-a674d7347b2f'
 
 # Author of this module
-Author = 'Brandon Olin'
+Author = 'Glenn Sarti'
 
 # Company or vendor of this module
 CompanyName = 'Community'
 
 # Copyright statement for this module
-Copyright = '(c) 2017 Brandon Olin. All rights reserved.'
+Copyright = '(c) 2017 Glenn Sarti. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Example backend for PoshBot'
+Description = 'TestServer backend for PoshBot'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0.0'
