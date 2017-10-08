@@ -19,56 +19,6 @@ Function Invoke-PostBotTestServerClient {
       Add-Type assemblyName PresentationCore
       Add-Type assemblyName WindowsBase
       ##Functions
-      Function Open-PoshChatAbout {
-        $rs=[RunspaceFactory]::CreateRunspace()
-        $rs.ApartmentState = "STA"
-        $rs.ThreadOptions = "ReuseThread"
-        $rs.Open()
-        $ps = [PowerShell]::Create()
-        $ps.Runspace = $rs
-          $ps.Runspace.SessionStateProxy.SetVariable("pwd",$pwd)
-        [void]$ps.AddScript({
-          [xml]$xaml = @"
-          <Window
-              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-              x:Name="AboutWindow" Title="About" Height="170" Width="330" ResizeMode="NoResize" WindowStartupLocation ="CenterScreen" ShowInTaskbar="False">
-                <Window.Background>
-                <LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>
-                    <LinearGradientBrush.GradientStops> <GradientStop Color='#C4CBD8' Offset='0' /> <GradientStop Color='#E6EAF5' Offset='0.2' />
-                    <GradientStop Color='#CFD7E2' Offset='0.9' /> <GradientStop Color='#C4CBD8' Offset='1' /> </LinearGradientBrush.GradientStops>
-                </LinearGradientBrush>
-              </Window.Background>
-              <StackPanel>
-                <Label FontWeight = 'Bold' FontSize = '20'>PowerShell Chat </Label>
-                <Label FontWeight = 'Bold' FontSize = '16' Padding = '0'> Version: 1.1 </Label>
-                <Label FontWeight = 'Bold' FontSize = '16' Padding = '0'> Created By: Boe Prox </Label>
-                <Label Padding = '10'> <Hyperlink x:Name = 'AuthorLink'> http://learn-powershell.net </Hyperlink> </Label>
-                <Button x:Name = 'CloseButton' Width = '100'> Close </Button>
-              </StackPanel>
-          </Window>
-"@
-        #Load XAML
-        $reader=(New-Object System.Xml.XmlNodeReader $xaml)
-        $AboutWindow=[Windows.Markup.XamlReader]::Load( $reader )
-
-        #Connect to Controls
-        $CloseButton = $AboutWindow.FindName("CloseButton")
-        $AuthorLink = $AboutWindow.FindName("AuthorLink")
-
-        #PsexecLink Event
-        $AuthorLink.Add_Click({
-          Start-Process "http://learn-powershell.net"
-        })
-
-        $CloseButton.Add_Click({
-          $AboutWindow.Close()
-        })
-
-        #Show Window
-        [void]$AboutWindow.showDialog()
-        }).BeginInvoke()
-      }
       Function Script:Save-Transcript {
           $saveFile = New-Object Microsoft.Win32.SaveFileDialog
           $saveFile.Filter = "Text documents (.txt)|*.txt"
@@ -108,88 +58,6 @@ Function Invoke-PostBotTestServerClient {
         }
       }
 
-      Function Script:Invoke-FontDialog {
-        [cmdletbinding()]
-        Param (
-            $Control,
-            [switch]$ShowColor,
-            [switch]$FontMustExist,
-            [switch]$HideEffects
-        )
-        Begin {
-          $Script:fontDialog = new-object windows.forms.fontdialog
-          $fontDialog.AllowScriptChange = $False
-          If ($PSBoundParameters['ShowColor']) {
-              $fontDialog.Showcolor = $True
-              $fontDialog.Color = $colors[$Control.Foreground.Color.ToString()]
-          }
-          If ($PSBoundParameters['FontMustExist']) {
-              $fontDialog.FontMustExist = $True
-          }
-          If ($PSBoundParameters['HideEffects']) {
-              $fontDialog.ShowEffects = $False
-          }
-          $styles = New-Object System.Collections.Arraylist
-          $textDecorations = $Control.TextDecorations | Select -Expand Location
-          If ($textDecorations -contains "Underline") {
-              $Styles.Add("Underline") | Out-Null
-          }
-          If ($textDecorations -contains "Strikethrough") {
-              $Styles.Add("Strikeout") | Out-Null
-          }
-          If ($Inputbox_txt.FontStyle -eq "Italic") {
-              $Styles.Add("Italic") | Out-Null
-          }
-          If ($Inputbox_txt.FontWeight -eq "Bold") {
-              $Styles.Add("Bold") | Out-Null
-          }
-          If ($styles.count -eq 0) {
-              $style = "Regular"
-          } Else {
-              $style = $styles -join ","
-          }
-        }
-        Process {
-          $fontDialog.Font = New-Object System.Drawing.Font -ArgumentList $Control.Fontfamily.source,$Control.FontSize,$Style,"Point"
-          If ($fontDialog.ShowDialog() -eq "OK") {
-            $Control.fontsize =  $FontDialog.Font.Size
-            If ($PSBoundParameters['ShowColor']) {
-              $Control.Foreground = $colors[$FontDialog.Color.Name]
-            }
-            $Control.FontFamily = $fontDialog.Font.FontFamily.Name
-            If ($fontDialog.Font.Bold) {
-              $Control.FontWeight = "Bold"
-            } Else {
-              $Control.FontWeight = "Regular"
-            }
-            If ($fontDialog.Font.Italic) {
-              $Control.FontStyle = "Italic"
-            } Else {
-              $Control.FontStyle = "Normal"
-            }
-            If (-Not $PSBoundParameters['HideEffects']) {
-              $textDecorationCollection = new-object System.Windows.TextDecorationCollection
-              If ($fontDialog.Font.Underline) {
-                $underline = New-Object System.Windows.TextDecoration
-                $underline.Location = 'Underline'
-                $textDecorationCollection.Add($underline)
-              }
-              If ($fontDialog.Font.Strikeout) {
-                $strikethrough = New-Object System.Windows.TextDecoration
-                $strikethrough.Location = 'strikethrough'
-                $textDecorationCollection.Add($strikethrough)
-              }
-              If ($textDecorationCollection.Count -gt 0) {
-                #Sometimes a control does not have a TextDecorations property
-                If ($Control | Get-Member -Name TextDecorations) {
-                  $Control.TextDecorations = $textDecorationCollection
-                }
-              }
-            }
-          }
-        }
-      }
-
       [void][System.Reflection.Assembly]::LoadWithPartialName('presentationframework')
       [xml]$xaml = @"
       <Window
@@ -226,16 +94,6 @@ Function Invoke-PostBotTestServerClient {
                       <Separator />
                       <MenuItem x:Name = 'ExitMenu' Header = 'E_xit' ToolTip = 'Exits the client.' InputGestureText ='Ctrl+E'> </MenuItem>
                   </MenuItem>
-                  <MenuItem x:Name = 'EditMenu' Header = '_Edit'>
-                      <MenuItem x:Name = 'FontMenu' Header = '_Font'>
-                          <MenuItem x:Name = 'MessageWindowFont' Header = '_MessageWindow'/>
-                          <MenuItem x:Name = 'OnlineUsersFont' Header = '_OnlineUsers'/>
-                          <MenuItem x:Name = 'InputBoxFont' Header = '_InputBox'/>
-                      </MenuItem>
-                  </MenuItem>
-                  <MenuItem x:Name = 'HelpMenu' Header = '_Help'>
-                      <MenuItem x:Name = 'AboutMenu' Header = '_About' ToolTip = 'Show the current version and other information.'> </MenuItem>
-                  </MenuItem>
               </Menu>
               <RichTextBox x:Name = 'MainMessage_txt' Grid.Column = '0' Grid.Row = '1' IsReadOnly = 'True' VerticalScrollBarVisibility='Visible'>
                   <FlowDocument>
@@ -268,9 +126,9 @@ Function Invoke-PostBotTestServerClient {
                       <RowDefinition Height = '*'/>
                   </Grid.RowDefinitions>
                   <Label Content = 'UserName' HorizontalAlignment = 'Stretch' Grid.Column = '0' Grid.Row = '0'/>
-                  <TextBox x:Name = 'username_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '0'/>
+                  <TextBox x:Name = 'username_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '0' Text = 'Client' />
                   <Label Content = 'Server' HorizontalAlignment = 'Stretch' Grid.Column = '0' Grid.Row = '1'/>
-                  <TextBox x:Name = 'servername_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '1'/>
+                  <TextBox x:Name = 'servername_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '1' Text = 'localhost' />
                   <Button x:Name = 'Connect_btn' MaxWidth = '75' Height = '20' Content = 'Connect'
                   Grid.Column = '0' Grid.Row = '2' HorizontalAlignment = 'stretch'/>
                   <Button x:Name = 'Disconnect_btn' MaxWidth = '75' Height = '20' Content = 'Disconnect'
@@ -285,9 +143,6 @@ Function Invoke-PostBotTestServerClient {
       $Window=[Windows.Markup.XamlReader]::Load( $reader )
 
       ##Controls
-      $MessageWindowFont = $Window.FindName("MessageWindowFont")
-      $OnlineUsersFont = $Window.FindName("OnlineUsersFont")
-      $InputBoxFont = $Window.FindName("InputBoxFont")
       $Script:Paragraph = $Window.FindName('Paragraph')
       $Script:OnlineUsers = $Window.FindName('OnlineUsers')
       $SendButton = $Window.FindName('Send_btn')
@@ -299,23 +154,9 @@ Function Invoke-PostBotTestServerClient {
       $Script:MainMessage = $Window.FindName('MainMessage_txt')
       $ExitMenu = $Window.FindName('ExitMenu')
       $SaveTranscript = $Window.FindName('SaveTranscript')
-      $AboutMenu = $Window.FindName('AboutMenu')
 
       # Events
-      # InputBox Font event
-      $InputBoxFont.Add_Click({
-        Invoke-FontDialog -Control $Inputbox_txt -ShowColor -FontMustExist
-      })
-      ##OnlineUser Font event
-      $OnlineUsersFont.Add_Click({
-        Invoke-FontDialog -Control $OnlineUsers -ShowColor -FontMustExist
-      })
-      ##MessageWindow Font event
-      $MessageWindowFont.Add_Click({
-        Invoke-FontDialog -Control $MainMessage -FontMustExist
-      })
-
-      #ExitMenu
+      # ExitMenu
       $ExitMenu.Add_Click({
         $Window.Close()
       })
@@ -323,11 +164,6 @@ Function Invoke-PostBotTestServerClient {
       #SaveTranscriptMenu
       $SaveTranscript.Add_Click({
         Save-Transcript
-      })
-
-      #AboutMenu
-      $AboutMenu.Add_Click({
-        Open-PoshChatAbout
       })
 
       #Connect
