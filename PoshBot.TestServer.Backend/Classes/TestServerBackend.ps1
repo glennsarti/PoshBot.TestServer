@@ -1,10 +1,14 @@
 
 class TestServerBackend : Backend {
+  [hashtable]$UserList
 
   # Constructor
   TestServerBackend () {
     Write-Warning "TestServerBackend:initialize"
+    $conn = [TestServerConnection]::New()
+    $this.Connection = $conn
     # Implement any needed initialization steps
+    $this.UserList = @{}
   }
 
   # Connect to the chat network
@@ -55,28 +59,66 @@ class TestServerBackend : Backend {
     Write-Warning "TestServerBackend:sendmessage"
     # Implement logic to send a message
     # back to the chat network
+
+    $stream = $this.Connection.TcpClient.GetStream()
+    
+    $Message = "~M{0}{1}{2}" -f 'Zorg', "~~", ($Response.Text -join "`n")
+    $data = [text.Encoding]::Ascii.GetBytes($Message)
+    $stream.Write($data,0,$data.length)
+    $stream.Flush()
+
   }
 
   # Return a user object given an Id
   [Person]GetUser([string]$UserId) {
-    Write-Warning "TestServerBackend:getuser"
+    Write-Warning "TestServerBackend:getuser $($UserId)"
+
+    $Person = $null
+    if ($UserId -eq '0') {
+      $Person = [Person]::New()
+      $Person.Id = $UserId
+      $Person.ClientId = $UserId
+      $Person.NickName = 'Zorg'
+      $person.FirstName = 'Zorg'
+      $Person.LastName = ''
+      $Person.FullName = 'Zorg'
+    } else {
+      $Person = [Person]::New()
+      $Person.Id = $UserId
+      $Person.ClientId = $UserId
+      $Person.NickName = 'Human'
+      $person.FirstName = 'Human'
+      $Person.LastName = ''
+      $Person.FullName = 'Human'
+    }
+
     # Return a [Person] instance (or a class derived from [Person])
-    return $null
+    return $Person
   }
 
   # Resolve a user name to user id
   [string]UsernameToUserId([string]$Username) {
-    Write-Warning "TestServerBackend:UsernameToUserId"
+    Write-Warning "TestServerBackend:UsernameToUserId $($Username)"
     # Do something using the chat network APIs to
     # resolve a username to an Id and return it
-    return '12345'
+    # TODO FAKED!
+    if ($Username -eq 'Zorg') {
+      return '0'
+    } else {
+      return '1'
+    }
   }
 
   # Resolve a user ID to a username/nickname
   [string]UserIdToUsername([string]$UserId) {
-    Write-Warning "TestServerBackend:UserIDToUsername"
+    Write-Warning "TestServerBackend:UserIDToUsername $($UserId)"
     # Do something using the network APIs to
     # resolve a username from an Id and return it
-    return 'JoeUser'
+
+    if ($UserId -eq '0') {
+      return 'Zorg'
+    } else {
+      return 'Human'
+    }
   }
 }

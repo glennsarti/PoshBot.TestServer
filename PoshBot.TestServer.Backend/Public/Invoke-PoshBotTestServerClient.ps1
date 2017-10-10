@@ -426,4 +426,4 @@ Function Invoke-PostBotTestServerClient {
   }
 }
 
-Invoke-PostBotTestServerClient
+Export-ModuleMember -Function Invoke-PostBotTestServerClient

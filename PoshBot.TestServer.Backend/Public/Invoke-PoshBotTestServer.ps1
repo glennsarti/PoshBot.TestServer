@@ -276,4 +276,4 @@ Function Invoke-PostBotTestServer {
   }
 }
 
-Invoke-PostBotTestServer -Verbose
+Export-ModuleMember -Function Invoke-PostBotTestServer
