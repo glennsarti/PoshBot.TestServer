@@ -13,12 +13,28 @@ class TestServerConnection : Connection {
     $this.MessageQueue =  [System.Collections.Queue]::Synchronized((New-Object System.collections.queue))
   }
 
+  # This call is non-blocking
+  [boolean]MessageAvailable() {
+    return ($this.MessageQueue.Count -ne 0)
+  }
+
+  # Retrieves next message in the queue
+  [string]GetNextMessage() {
+    return $this.Messagequeue.Dequeue()
+  }
+
+  [string]ThisBotID() {
+    # TODO get from config
+    Return 'Zorg'
+  }
+
   # Connect to the chat network
   [void]Connect() {
     Write-Warning "TestServerConnection:connect"
 
     # Use the configuration stored in $this.Config (inherited from base class)
     # to connect to the chat network
+    # TODO get from config
     $botName = 'Zorg'
     $localPort = 15600
 
@@ -54,7 +70,8 @@ class TestServerConnection : Connection {
               }
             } Catch {
               #Connection to server has been closed
-              $Messagequeue.Enqueue("~S")
+              # TODO If the connection is broken why send a message?
+              # $Messagequeue.Enqueue("~S")
               Break
             }
           }

@@ -211,7 +211,8 @@ Function Invoke-PostBotTestServer {
         }
         catch {
           $ErrorMessage = $_.Exception.Message
-          Write-Warning "Error in ${IncomingMessageTimer}: ${ErrorMessage}"
+          Write-Warning "Error in IncomingMessageTimer: ${ErrorMessage}"
+          $_ | % { Write-Warning ($_) }
         }
       }
     }
@@ -276,4 +277,5 @@ Function Invoke-PostBotTestServer {
   }
 }
 
-Export-ModuleMember -Function Invoke-PostBotTestServer
+#Export-ModuleMember -Function Invoke-PostBotTestServer
+#Invoke-PostBotTestServer
