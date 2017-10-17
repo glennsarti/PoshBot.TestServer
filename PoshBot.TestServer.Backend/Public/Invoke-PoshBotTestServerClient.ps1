@@ -371,62 +371,76 @@ Function Invoke-PostBotTestServerClient {
             # If a different day then when client started
             If ($date -ne (Get-Date -Format ddMMyyyy)) {
               $date = (Get-Date -Format ddMMyyyy)
-              $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0} " -f (Get-Date).ToShortDateString()) -ForeGround Black -Bold))
-              $Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
+              #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0} " -f (Get-Date).ToShortDateString()) -ForeGround Black -Bold))
+              #$Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
             }
             Switch ($Message) {
               {$_.Startswith("~B")} {
                 # Message
                 $data = ($_).SubString(2)
                 $split = $data -split ("{0}" -f "~~")
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}: " -f $split[0]) -ForeGround Black -Bold))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}" -f $split[1]) -ForeGround Orange))
+                [Console]::WriteLine("Not Implmented $_")
+                #$Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
+                #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}: " -f $split[0]) -ForeGround Black -Bold))
+                #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}" -f $split[1]) -ForeGround Orange))
               }
               {$_.Startswith("~I")} {
                 # Message
                 $data = ($_).SubString(2)
                 $split = $data -split ("{0}" -f "~~")
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}: " -f $split[0]) -ForeGround Black -Bold))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}" -f $split[1]) -ForeGround Blue))
+                [Console]::WriteLine("Not Implmented $_")
+                #$Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
+                #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}: " -f $split[0]) -ForeGround Black -Bold))
+                #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}" -f $split[1]) -ForeGround Blue))
               }
               {$_.Startswith("~M")} {
                 # Message
                 $data = ($_).SubString(2)
                 $split = $data -split ("{0}" -f "~~")
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}: " -f $split[0]) -ForeGround Black -Bold))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}" -f $split[1]) -ForeGround Black))
+
+                $tmpDoc = [xml]($Script:WindowMessagesXML.Document.OuterXml)
+                $xmlItem = $tmpDoc.CreateElement('message')
+                $xmlItem.SetAttribute('timestamp', (Get-Date -UFormat '%a, %d %b %Y %H:%M:%S'))
+                $xmlItem.SetAttribute('from',$split[0])
+                $xmlItem.SetAttribute('id','???')
+                $xmlItem.InnerText = $split[1]
+                $tmpDoc.messages.AppendChild($xmlItem) | Out-Null
+                $Script:WindowMessagesXML.Document = $tmpDoc
               }
               {$_.Startswith("~D")} {
                 # Disconnect
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0} has disconnected from the server" -f $_.SubString(2)) -ForeGround Green))
-                # Remove user from online list
-                $OnlineUsers.Items.Remove($_.SubString(2))
+                $username = $_.SubString(2)
+                $tmpDoc = [xml]($Script:WindowSubjectListXML.Document.OuterXml)
+                $result = $tmpDoc.SelectSingleNode("/subjects/subject[@subjecttype='user' and @id='$($username)']")
+                if ($result -ne $null) {
+                  $result.ParentNode.RemoveChild($result) | Out-Null
+                  $Script:WindowSubjectListXML.Document = $tmpDoc
+                }
               }
               {$_.StartsWith("~C")} {
                 #Connect
-                $Message = ("{0} has connected to the server" -f $_.SubString(2))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message $message -ForeGround Green))
-                ##Add user to online list
-                If ($Username -ne $_.SubString(2)) {
-                  $OnlineUsers.Items.Add($_.SubString(2))
+                $username = $_.SubString(2)
+                $tmpDoc = [xml]($Script:WindowSubjectListXML.Document.OuterXml)
+                $result = $tmpDoc.SelectSingleNode("/subjects/subject[@subjecttype='user' and @id='$($username)']")
+                if ($result -eq $null) {
+                  $xmlItem = $tmpDoc.CreateElement('subject')
+                  $xmlItem.SetAttribute('name',$username)
+                  $xmlItem.SetAttribute('id',$username)
+                  $xmlItem.SetAttribute('subjecttype','user')
+                  $tmpDoc.subjects.AppendChild($xmlItem) | Out-Null
+                  $Script:WindowSubjectListXML.Document = $tmpDoc
                 }
               }
               {$_.StartsWith("~S")} {
                 #Server Shutdown
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-                $Paragraph.Inlines.Add((New-ChatMessage -Message ("SERVER HAS DISCONNECTED.") -ForeGround Red))
                 $TcpClient.Close()
                 $ClientConnection.user.PowerShell.EndInvoke($ClientConnections.user.Job)
                 $ClientConnection.user.PowerShell.Runspace.Close()
                 $ClientConnection.user.PowerShell.Dispose()
                 $ConnectButton.IsEnabled = $True
                 $DisconnectButton.IsEnabled = $False
-                $OnlineUsers.Items.Clear()
+                $Script:WindowMessagesXML.Document = '<messages xmlns=""></messages>'
+                $Script:WindowSubjectListXML.Document = '<subjects xmlns=""></subjects>'
               }
               {$_.StartsWith("~Z")} {
                 [xml]$SubjectListXML = '<subjects xmlns=""><subject name="Lobby" subjecttype="room" id="-1" /></subjects>'
@@ -434,7 +448,6 @@ Function Invoke-PostBotTestServerClient {
                 $online = (($_).SubString(2) -split "~~")
                 #Add online users to window
                 $Online | ForEach {
-                  [Console]::WriteLine($_)
                   $xmlItem = $SubjectListXML.CreateElement('subject')
                   $xmlItem.SetAttribute('name',$_)
                   $xmlItem.SetAttribute('id',$_)
@@ -447,8 +460,6 @@ Function Invoke-PostBotTestServerClient {
                 $MainMessage.text += ("[{0}] {1}" -f (Get-Date).ToLongTimeString(),$_)
               }
             }
-            #$Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
-            #$MainMessage.ScrollToEnd()
           }
         })
         #Start timer
@@ -471,9 +482,6 @@ Function Invoke-PostBotTestServerClient {
 
       #Disconnect from server
       $DisconnectButton.Add_Click({
-        $Paragraph.Inlines.Add((New-ChatMessage -Message ("[{0}] " -f (Get-Date).ToLongTimeString()) -ForeGround Gray))
-        $Paragraph.Inlines.Add((New-ChatMessage -Message ("Disconnecting from server: {0}" -f $Server) -ForeGround Red))
-        $Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
         #Shutdown client runspace and socket
         $TcpClient.Close()
         $ClientConnection.user.PowerShell.EndInvoke($ClientConnection.user.Job)
@@ -481,14 +489,14 @@ Function Invoke-PostBotTestServerClient {
         $ClientConnection.user.PowerShell.Dispose()
         $ConnectButton.IsEnabled = $True
         $DisconnectButton.IsEnabled = $False
-        $OnlineUsers.Items.Clear()
+        $Script:WindowMessagesXML.Document = '<messages xmlns=""></messages>'
+        $Script:WindowSubjectListXML.Document = '<subjects xmlns=""></subjects>'
       })
 
       $Window.Add_KeyDown({
         $key = $_.Key
         If ([System.Windows.Input.Keyboard]::IsKeyDown("RightCtrl") -OR [System.Windows.Input.Keyboard]::IsKeyDown("LeftCtrl")) {
           Switch ($Key) {
-          "E" {$Window.Close()}
           "RETURN" {
             Write-Verbose ("Sending message")
             If (($Inputbox_txt.Text).StartsWith("@")) {
@@ -499,9 +507,6 @@ Function Invoke-PostBotTestServerClient {
             $ServerStream.Write($data,0,$data.length)
             $ServerStream.Flush()
             $Inputbox_txt.Clear()
-          }
-          "S" {
-            Save-Transcript
           }
           Default {$Null}
           }
