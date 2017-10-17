@@ -60,134 +60,217 @@ Function Invoke-PostBotTestServerClient {
 
       [void][System.Reflection.Assembly]::LoadWithPartialName('presentationframework')
       [xml]$xaml = @"
-      <Window
-          xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-          x:Name="Window" Title="PoshChat" Height="400" Width="550" WindowStartupLocation="CenterScreen" ShowInTaskbar="True">
-          <Window.Background>
-              <LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>
-                  <LinearGradientBrush.GradientStops> <GradientStop Color='#C4CBD8' Offset='0' /> <GradientStop Color='#E6EAF5' Offset='0.2' />
-                  <GradientStop Color='#CFD7E2' Offset='0.9' /> <GradientStop Color='#C4CBD8' Offset='1' /> </LinearGradientBrush.GradientStops>
-              </LinearGradientBrush>
-          </Window.Background>
-          <Grid ShowGridLines = 'false'>
-              <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width ='175*'> </ColumnDefinition>
-                  <ColumnDefinition Width ='Auto'> </ColumnDefinition>
-                  <ColumnDefinition Width ='75*'> </ColumnDefinition>
-              </Grid.ColumnDefinitions>
-              <Grid.RowDefinitions>
-                  <RowDefinition Height = 'Auto'/>
-                  <RowDefinition Height = '*'/>
-                  <RowDefinition Height = '10'/>
-                  <RowDefinition Height = '80'/>
-              </Grid.RowDefinitions>
-            <Menu Width = 'Auto' HorizontalAlignment = 'Stretch' Grid.Row = '0' Grid.ColumnSpan = '3'>
-              <Menu.Background>
-                  <LinearGradientBrush StartPoint='0,0' EndPoint='0,1'>
-                      <LinearGradientBrush.GradientStops> <GradientStop Color='#C4CBD8' Offset='0' /> <GradientStop Color='#E6EAF5' Offset='0.2' />
-                      <GradientStop Color='#CFD7E2' Offset='0.9' /> <GradientStop Color='#C4CBD8' Offset='1' /> </LinearGradientBrush.GradientStops>
-                  </LinearGradientBrush>
-              </Menu.Background>
-                  <MenuItem x:Name = 'FileMenu' Header = '_File'>
-                      <MenuItem x:Name = 'SaveTranscript' Header = '_Save Transcript' ToolTip = 'Saves the chat transcript.' InputGestureText ='Ctrl+S'> </MenuItem>
-                      <Separator />
-                      <MenuItem x:Name = 'ExitMenu' Header = 'E_xit' ToolTip = 'Exits the client.' InputGestureText ='Ctrl+E'> </MenuItem>
-                  </MenuItem>
-              </Menu>
-              <RichTextBox x:Name = 'MainMessage_txt' Grid.Column = '0' Grid.Row = '1' IsReadOnly = 'True' VerticalScrollBarVisibility='Visible'>
-                  <FlowDocument>
-                      <Paragraph x:Name = 'Paragraph'/>
-                  </FlowDocument>
-              </RichTextBox>
-              <Label Grid.Column='1' Grid.Row = '1' Width='8' Grid.RowSpan = '3' HorizontalAlignment = 'Center' VerticalAlignment = 'Stretch'
-              Background = 'LightGray'/>
-              <Label Grid.Column = '0' Grid.Row = '2' Grid.ColumnSpan = '3' Background = 'LightGray'/>
-              <ListView x:Name = 'OnlineUsers' Grid.Column = '2' Grid.Row = '1' />
-              <Grid Grid.Column = '0' Grid.Row = '3' ShowGridLines = 'false'>
-              <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width ='175*'> </ColumnDefinition>
-                  <ColumnDefinition Width ='Auto'> </ColumnDefinition>
-              </Grid.ColumnDefinitions>
-                  <TextBox x:Name = 'Input_txt' AcceptsReturn = 'True' VerticalScrollBarVisibility='Visible' TextWrapping = 'Wrap'
-                  Grid.Column = '0' HorizontalAlignment = 'Stretch'/>
-                  <Button x:Name = 'Send_btn' Width = '50' Height = '25' Content = 'Send' Grid.Column = '1'/>
-              </Grid>
-              <Grid Grid.Column = '2' Grid.Row = '3' ShowGridLines = 'false'>
-                  <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width ='Auto'> </ColumnDefinition>
-                      <ColumnDefinition Width ='5'> </ColumnDefinition>
-                      <ColumnDefinition Width ='*'> </ColumnDefinition>
-                      <ColumnDefinition Width ='Auto'> </ColumnDefinition>
-                  </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                      <RowDefinition Height = 'Auto'/>
-                      <RowDefinition Height = 'Auto'/>
-                      <RowDefinition Height = '*'/>
-                  </Grid.RowDefinitions>
-                  <Label Content = 'UserName' HorizontalAlignment = 'Stretch' Grid.Column = '0' Grid.Row = '0'/>
-                  <TextBox x:Name = 'username_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '0' Text = 'Client' />
-                  <Label Content = 'Server' HorizontalAlignment = 'Stretch' Grid.Column = '0' Grid.Row = '1'/>
-                  <TextBox x:Name = 'servername_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '1' Text = 'localhost' />
-                  <Button x:Name = 'Connect_btn' MaxWidth = '75' Height = '20' Content = 'Connect'
-                  Grid.Column = '0' Grid.Row = '2' HorizontalAlignment = 'stretch'/>
-                  <Button x:Name = 'Disconnect_btn' MaxWidth = '75' Height = '20' Content = 'Disconnect'
-                  Grid.Column = '2' Grid.Row = '2' HorizontalAlignment = 'stretch' IsEnabled = 'False'/>
-                  <Label Grid.Column = '3' Grid.Row = '2' Width ='5'/>
-              </Grid>
-          </Grid>
-      </Window>
-"@
-      #Load XAML
-      $reader=(New-Object System.Xml.XmlNodeReader $xaml)
-      $Window=[Windows.Markup.XamlReader]::Load( $reader )
+<!--<Window x:Class="WpfApp1.MainWindow"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:local="clr-namespace:WpfApp1"
+      mc:Ignorable="d"
+      Title="MainWindow" Height="350" Width="525">
+  <Grid>
+      
+  </Grid>
+</Window>-->
 
-      ##Controls
-      $Script:Paragraph = $Window.FindName('Paragraph')
-      $Script:OnlineUsers = $Window.FindName('OnlineUsers')
+<Window
+  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+  x:Name="Window" Title="PoshChat" Height="400" Width="550" WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
+  Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+
+<Window.Resources>
+  <XmlDataProvider x:Key="SubjectList" XPath="subjects" x:Name="xmlSubjectList">
+    <x:XData>
+      <subjects xmlns="">
+        <subject name="Lobby" subjecttype="room" id="-1" />
+        <subject name="Zorg" subjecttype="room" id="-1" />
+        <subject name="AReallyReallyReallyLongName" subjecttype="room" id="-1" />
+      </subjects>
+    </x:XData>
+  </XmlDataProvider>
+
+  <XmlDataProvider x:Key="Messages" XPath="messages" x:Name="xmlMessages">
+    <x:XData>
+      <messages xmlns="">
+        <message timestamp="20170101 23:00:00" from="Zorg" id="1234">Hello1<reaction type="gears" count="1"/>
+
+        </message>
+        <message timestamp="20170101 23:01:00" from="Zorg" id="5678">Hello2<reaction type="exclaimation" count="2"/>
+        </message>
+      </messages>
+    </x:XData>
+  </XmlDataProvider>
+
+</Window.Resources>
+
+<DockPanel >
+  <Grid DockPanel.Dock="Top">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto"/>
+      <ColumnDefinition Width="5" />
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="5" />
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <ScrollViewer Grid.Column="0" Grid.Row="0"
+      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+      <ItemsControl x:Name="SubjectList" DataContext="{DynamicResource SubjectList}" ItemsSource="{Binding XPath=subject}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <!-- User/Room List -->
+            <Border
+              Margin="2" Padding="2"
+              BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+              BorderThickness="1">
+
+              <TextBlock Padding="1" TextWrapping="Wrap" Text="{Binding XPath=@name}"/>
+            </Border>
+
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <GridSplitter Width="5" Grid.Column='1' Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+
+    <ScrollViewer Grid.Column='2' Grid.Row="0" Visibility="Visible"
+      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+      <ItemsControl x:Name="MessageList" DataContext="{DynamicResource Messages}" ItemsSource="{Binding XPath=message}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <!--Messages List-->
+            <Border BorderThickness="0 0 0 1" VerticalAlignment="Top" BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- TODO Add profile picture -->
+                <Rectangle Width="50" Height="50" Fill="Blue" VerticalAlignment="Top" Visibility="Hidden" />
+
+                <Grid Grid.Column="1">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+
+                  <StackPanel Orientation="Horizontal" Grid.Row="0">
+                    <Label Padding="5,1,5,1" Content="{Binding XPath=@from}" FontWeight="Bold"/>
+                    <Label Padding="5,1,5,1" Content="{Binding XPath=@timestamp}" />
+                  </StackPanel>
+
+                  <TextBlock Padding="5,1,5,1" Grid.Row="1" TextWrapping="Wrap" Text="{Binding XPath=.}"/>
+
+                  <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <Label Padding="5,1,5,1"  Content="reaction 1" />
+                    <Label Padding="5,1,5,1"  Content="reaction2" />
+                  </StackPanel>
+                </Grid>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+
+    <!-- Row 1 -->
+    <GridSplitter Height="5" Grid.Row='1' Grid.Column="1" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
+
+    <!-- Row 2 -->
+    <Grid Grid.Column = '0' Grid.Row = '2' ShowGridLines = 'false' MinHeight="20" MinWidth="20">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width ='Auto'></ColumnDefinition>
+        <ColumnDefinition Width ='*'></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height = 'Auto'/>
+        <RowDefinition Height = '*'/>
+      </Grid.RowDefinitions>
+      <Label Padding="2" Margin="2" Content = 'UserName' HorizontalAlignment = 'Stretch' Grid.Column = '0' Grid.Row = '0'/>
+      <TextBox Padding="2" Margin="2" x:Name = 'username_txt' HorizontalAlignment = 'Stretch' Grid.Column = '2' Grid.Row = '0' Text = 'Human' VerticalAlignment="Center" />
+      <Button Padding="2" Margin="2" x:Name = 'Connect_btn' MaxWidth = '75' Height = '20' Content = 'Connect'
+                  Grid.Column = '0' Grid.Row = '1' HorizontalAlignment = 'stretch'/>
+      <Button Padding="2" Margin="2" x:Name = 'Disconnect_btn' MaxWidth = '75' Height = '20' Content = 'Disconnect'
+                  Grid.Column = '2' Grid.Row = '1' HorizontalAlignment = 'stretch' IsEnabled = 'False'/>
+      <Label Grid.Column = '3' Grid.Row = '2' Width ='5'/>
+    </Grid>
+
+    <Grid Grid.Column = '2' Grid.Row = '2' ShowGridLines = 'false' MinHeight="20" MinWidth="20">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width ='*'></ColumnDefinition>
+        <ColumnDefinition Width ='Auto'></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+      <TextBox Padding="2" Margin="2" x:Name = 'Input_txt' AcceptsReturn = 'True' VerticalScrollBarVisibility='Visible' TextWrapping = 'Wrap'
+                  Grid.Column = '0' HorizontalAlignment = 'Stretch' />
+      <Button Padding="2" Margin="2" x:Name = 'Send_btn'   Content = 'Send' Grid.Column = '1'/>
+    </Grid>
+    <!--</StackPanel>-->
+
+  </Grid>
+</DockPanel>
+
+</Window>
+"@
+      # Load XAML
+      $reader = (New-Object System.Xml.XmlNodeReader $xaml)
+      $Window = [Windows.Markup.XamlReader]::Load($reader)
+
+      # Controls
+      [xml]$Script:AllMessagesXML = '<messages xmlns=""></messages>'
+
+      $Script:WindowMessagesXML = $Window.FindName('xmlMessages')
+      $Script:WindowSubjectListXML = $Window.FindName('xmlSubjectList')
+      
+      #$Script:OnlineUsers = $Window.FindName('OnlineUsers')
+
       $SendButton = $Window.FindName('Send_btn')
       $Script:ConnectButton = $Window.FindName('Connect_btn')
       $DisconnectButton = $Window.FindName('Disconnect_btn')
       $Username_txt = $Window.FindName('username_txt')
-      $Server_txt = $Window.FindName('servername_txt')
+      #$Server_txt = $Window.FindName('servername_txt')
       $Inputbox_txt = $Window.FindName('Input_txt')
-      $Script:MainMessage = $Window.FindName('MainMessage_txt')
-      $ExitMenu = $Window.FindName('ExitMenu')
-      $SaveTranscript = $Window.FindName('SaveTranscript')
+      #$Script:MainMessage = $Window.FindName('MainMessage_txt')
+      #$ExitMenu = $Window.FindName('ExitMenu')
+      #$SaveTranscript = $Window.FindName('SaveTranscript')
 
       # Events
       # ExitMenu
-      $ExitMenu.Add_Click({
-        $Window.Close()
-      })
+      #$ExitMenu.Add_Click({
+      #  $Window.Close()
+      #})
 
       #SaveTranscriptMenu
-      $SaveTranscript.Add_Click({
-        Save-Transcript
-      })
+      #$SaveTranscript.Add_Click({
+      #  Save-Transcript
+      #})
 
       #Connect
       $ConnectButton.Add_Click({
-        #Get Server IP
-        $Server = $Server_txt.text
+        # Get Server IP
+        $Server = 'localhost'
 
-        #Get Username
+        # Get Username
+        # TODO Is global even needed?
         $Global:Username = $Username_txt.text
         If ($username -match "^[A-Za-z0-9_!]*$") {
           $ConnectButton.IsEnabled = $False
           $DisconnectButton.IsEnabled = $True
           If ($Server -AND $Username) {
-            $Message = "Connecting to {0} as {1}" -f $Server,$username
-            $Paragraph.Inlines.Add((New-ChatMessage -Message ("{0} " -f (Get-Date).ToShortDateString()) -ForeGround Black -Bold))
-            $Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
-            $Paragraph.Inlines.Add((New-ChatMessage -Message $message -ForeGround Green))
-            $Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
+            Write-Verbose "Connecting to {0} as {1} ..." -f $Server,$username
 
             #Connect to server
             $Endpoint = new-object System.Net.IPEndpoint ([ipaddress]::any,$SourcePort)
             $TcpClient = [Net.Sockets.TCPClient]$endpoint
             Try {
               $TcpClient.Connect($Server,15600)
+              # TODO Is global even needed?
               $Global:ServerStream = $TcpClient.GetStream()
               $data = [text.Encoding]::Ascii.GetBytes($Username)
               $ServerStream.Write($data,0,$data.length)
@@ -235,7 +318,7 @@ Function Invoke-PostBotTestServerClient {
               }
             } Catch {
               #Errors Connecting to server
-              $Paragraph.Inlines.Add((New-ChatMessage -Message ("Unable to connect to {0}! Please try again later!" -f $RemoteServer) -ForeGround Red))
+              Write-Warning "Unable to connect to {0}! Please try again later!" -f $RemoteServer
               $ConnectButton.IsEnabled = $True
               $TcpClient.Close()
               $ClientConnection.user.PowerShell.EndInvoke($ClientConnections.user.Job)
@@ -245,8 +328,7 @@ Function Invoke-PostBotTestServerClient {
           }
         } Else {
           #Username is not in correct format
-          $Paragraph.Inlines.Add((New-ChatMessage -Message ("`'{0}`' is not a valid username! Acceptable characters are 'A-Za-z0-9!_'. Spaces are not allowed!" -f $username) -ForeGround Red))
-          $Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
+          Write-Warning "`'{0}`' is not a valid username! Acceptable characters are 'A-Za-z0-9!_'. Spaces are not allowed!" -f $username
         }
       })
 
@@ -347,19 +429,26 @@ Function Invoke-PostBotTestServerClient {
                 $OnlineUsers.Items.Clear()
               }
               {$_.StartsWith("~Z")} {
+                [xml]$SubjectListXML = '<subjects xmlns=""><subject name="Lobby" subjecttype="room" id="-1" /></subjects>'
                 #List of connected users
                 $online = (($_).SubString(2) -split "~~")
                 #Add online users to window
                 $Online | ForEach {
-                  $OnlineUsers.Items.Add($_)
+                  [Console]::WriteLine($_)
+                  $xmlItem = $SubjectListXML.CreateElement('subject')
+                  $xmlItem.SetAttribute('name',$_)
+                  $xmlItem.SetAttribute('id',$_)
+                  $xmlItem.SetAttribute('subjecttype','user')
+                  $SubjectListXML.subjects.AppendChild($xmlItem) | Out-Null
                 }
+                $Script:WindowSubjectListXML.Document = $SubjectListXML
               }
               Default {
                 $MainMessage.text += ("[{0}] {1}" -f (Get-Date).ToLongTimeString(),$_)
               }
             }
-            $Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
-            $MainMessage.ScrollToEnd()
+            #$Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
+            #$MainMessage.ScrollToEnd()
           }
         })
         #Start timer
@@ -419,7 +508,10 @@ Function Invoke-PostBotTestServerClient {
         }
       })
 
-      Write-Host "Showing client..."
+      Write-Verose "Showing client..."
+      $Script:WindowMessagesXML.Document = '<messages xmlns=""></messages>'
+      $Script:WindowSubjectListXML.Document = '<subjects xmlns=""></subjects>'
+
       [void]$Window.showDialog()
 
     }).Invoke()
