@@ -167,10 +167,15 @@ Function Invoke-PostBotTestServerClient {
 
                   <TextBlock Padding="5,1,5,1" Grid.Row="1" TextWrapping="Wrap" Text="{Binding XPath=.}"/>
 
-                  <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
-                    <Label Padding="5,1,5,1"  Content="reaction 1" />
-                    <Label Padding="5,1,5,1"  Content="reaction2" />
-                  </StackPanel>
+                  <ItemsControl ItemsSource="{Binding XPath=reaction}" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Padding="1" Margin="2" BorderThickness="1"  BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
+                          <Image Width="16" Height="16" Margin="1" Source="{Binding XPath=@url}" ToolTip="{Binding XPath=@count}" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
                 </Grid>
               </Grid>
             </Border>
