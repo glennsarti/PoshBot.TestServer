@@ -18,43 +18,17 @@ Function Invoke-PostBotTestServerClient {
       Add-Type assemblyName PresentationFramework
       Add-Type assemblyName PresentationCore
       Add-Type assemblyName WindowsBase
-      ##Functions
-      Function Script:Save-Transcript {
-          $saveFile = New-Object Microsoft.Win32.SaveFileDialog
-          $saveFile.Filter = "Text documents (.txt)|*.txt"
-          $saveFile.DefaultExt = '.txt'
-          $saveFile.FileName = ("{0:yyyyddmm_hhmmss}ChatTranscript" -f (Get-Date))
-          $saveFile.OverwritePrompt = $True
-          $return = $saveFile.ShowDialog()
-          If ($return) {
-              $Message = new-object System.Windows.Documents.TextRange -ArgumentList $MainMessage.Document.ContentStart,$MainMessage.Document.ContentEnd
-              $Message.text | Out-File $saveFile.FileName
-          }
-      }
-      Function Script:New-ChatMessage {
-        [cmdletbinding()]
-        Param (
-          [parameter(ValueFromPipeLine=$True)]
-          [string]$Message,
-          [parameter()]
-          [string]$Foreground,
-          [parameter()]
-          [string]$Background,
-          [parameter()]
-          [switch]$Bold
-        )
-        Begin {
-          $Run = New-Object System.Windows.Documents.Run
-          $Run.Foreground = $Foreground
-          If ($PSBoundParameters['Bold']) {
-            $run.FontWeight = 'Bold'
-          }
-        }
-        Process {
-          $Run.Text = $Message
-        }
-        End{
-          Write-Output $Run
+      # Functions
+      Function Script:Get-ReactionURL($ReactionType) {
+        switch ($ReactionType) {
+          'Success'        { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/check-circle-o.png'; break }
+          'Failure'        { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/exclamation-circle.png'; break }
+          'Processing'     { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/gear.png'; break }
+          'Warning'        { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/warning.png'; break }
+          'ApprovalNeeded' { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/lock.png'; break }
+          'Cancelled'      { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/minus-square.png'; break }
+          'Denied'         { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/stop-circle-o.png'; break }
+          default          { Write-Output 'https://github.com/encharm/Font-Awesome-SVG-PNG/raw/master/black/png/16/question-circle.png'; break; }
         }
       }
 
@@ -93,10 +67,10 @@ Function Invoke-PostBotTestServerClient {
   <XmlDataProvider x:Key="Messages" XPath="messages" x:Name="xmlMessages">
     <x:XData>
       <messages xmlns="">
-        <message timestamp="20170101 23:00:00" from="Zorg" id="1234">Hello1<reaction type="gears" count="1"/>
+        <message timestamp="20170101 23:00:00" from="Zorg" id="1234">Hello1<reaction type="gears" url="???"/>
 
         </message>
-        <message timestamp="20170101 23:01:00" from="Zorg" id="5678">Hello2<reaction type="exclaimation" count="2"/>
+        <message timestamp="20170101 23:01:00" from="Zorg" id="5678">Hello2<reaction type="exclaimation" url="???"/>
         </message>
       </messages>
     </x:XData>
@@ -171,7 +145,7 @@ Function Invoke-PostBotTestServerClient {
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <Border Padding="1" Margin="2" BorderThickness="1"  BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
-                          <Image Width="16" Height="16" Margin="1" Source="{Binding XPath=@url}" ToolTip="{Binding XPath=@count}" />
+                          <Image Width="16" Height="16" Margin="1" Source="{Binding XPath=@url}" />
                         </Border>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -232,29 +206,11 @@ Function Invoke-PostBotTestServerClient {
 
       $Script:WindowMessagesXML = $Window.FindName('xmlMessages')
       $Script:WindowSubjectListXML = $Window.FindName('xmlSubjectList')
-      
-      #$Script:OnlineUsers = $Window.FindName('OnlineUsers')
-
       $SendButton = $Window.FindName('Send_btn')
       $Script:ConnectButton = $Window.FindName('Connect_btn')
       $DisconnectButton = $Window.FindName('Disconnect_btn')
       $Username_txt = $Window.FindName('username_txt')
-      #$Server_txt = $Window.FindName('servername_txt')
       $Inputbox_txt = $Window.FindName('Input_txt')
-      #$Script:MainMessage = $Window.FindName('MainMessage_txt')
-      #$ExitMenu = $Window.FindName('ExitMenu')
-      #$SaveTranscript = $Window.FindName('SaveTranscript')
-
-      # Events
-      # ExitMenu
-      #$ExitMenu.Add_Click({
-      #  $Window.Close()
-      #})
-
-      #SaveTranscriptMenu
-      #$SaveTranscript.Add_Click({
-      #  Save-Transcript
-      #})
 
       #Connect
       $ConnectButton.Add_Click({
@@ -407,12 +363,58 @@ Function Invoke-PostBotTestServerClient {
 
                 $tmpDoc = [xml]($Script:WindowMessagesXML.Document.OuterXml)
                 $xmlItem = $tmpDoc.CreateElement('message')
-                $xmlItem.SetAttribute('timestamp', (Get-Date -UFormat '%a, %d %b %Y %H:%M:%S'))
-                $xmlItem.SetAttribute('from',$split[0])
-                $xmlItem.SetAttribute('id',$MessageID)
+                $xmlItem.SetAttribute('timestamp', (Get-Date -UFormat '%a, %d %b %Y %H:%M:%S')) | Out-Null
+                $xmlItem.SetAttribute('from',$split[0]) | Out-Null
+                $xmlItem.SetAttribute('id',$MessageID) | Out-Null
                 $xmlItem.InnerText = $split[1]
                 $tmpDoc.messages.AppendChild($xmlItem) | Out-Null
                 $Script:WindowMessagesXML.Document = $tmpDoc
+              }
+              {$_.Startswith("~A")} {
+                # Add a reaction to a message
+                # ~A<Username>~~MsgID~~<ReactionType>
+                $data = ($_).SubString(2)
+                $split = $data -split ("{0}" -f "~~")
+                $tmpDoc = [xml]($Script:WindowMessagesXML.Document.OuterXml)
+                $msgNode = $tmpDoc.SelectSingleNode("/messages/message[@id='$($split[1])']")
+                if ($msgNode -ne $null) {
+                  $reactNode = $msgNode.SelectSingleNode("reaction[@type='$($split[2])']")
+                  if ($reactNode -eq $null) {
+                    $reactNode = $tmpDoc.CreateElement('reaction')
+                    $reactNode.SetAttribute('type',$split[2]) | Out-Null
+                    $reactNode.SetAttribute('url', (Get-ReactionURL $split[2]) ) | Out-Null
+                    $msgNode.AppendChild($reactNode) | Out-Null
+                  }
+                  $userReactNode = $reactNode.SelectSingleNode("user[@name='$($split[0])']")
+                  if ($userReactNode -eq $null) {
+                    $userReactNode = $tmpDoc.CreateElement('user')
+                    $userReactNode.SetAttribute('name',$split[0]) | Out-Null
+                    $reactNode.AppendChild($userReactNode) | Out-Null
+                  }
+                  $Script:WindowMessagesXML.Document = $tmpDoc
+                }
+              }
+              {$_.Startswith("~R")} {
+                # Remove a reaction from a message
+                # ~R<Username>~~MsgID~~<ReactionType>
+                $data = ($_).SubString(2)
+                $split = $data -split ("{0}" -f "~~")
+                $tmpDoc = [xml]($Script:WindowMessagesXML.Document.OuterXml)
+                $msgNode = $tmpDoc.SelectSingleNode("/messages/message[@id='$($split[1])']")
+                if ($msgNode -ne $null) {
+                  $reactNode = $msgNode.SelectSingleNode("reaction[@type='$($split[2])']")
+                  if ($reactNode -ne $null) {
+                    $userReactNode = $reactNode.SelectSingleNode("user[@name='$($split[0])']")
+                    if ($userReactNode -ne $null) {
+                      $reactNode.RemoveChild($userReactNode) | Out-Null
+                      if ($reactNode.ChildNodes.Count -eq 0) {
+                        # There are no more users with this reaction.  Remove it enitrely
+                        $reactNode.ParentNode.RemoveChild($reactNode) | Out-Null
+                      }
+                      $Script:WindowMessagesXML.Document = $tmpDoc
+                    }
+                  }
+                }
               }
               {$_.Startswith("~D")} {
                 # Disconnect
@@ -425,7 +427,7 @@ Function Invoke-PostBotTestServerClient {
                 }
               }
               {$_.StartsWith("~C")} {
-                #Connect
+                # Connect
                 $username = $_.SubString(2)
                 $tmpDoc = [xml]($Script:WindowSubjectListXML.Document.OuterXml)
                 $result = $tmpDoc.SelectSingleNode("/subjects/subject[@subjecttype='user' and @id='$($username)']")
@@ -439,7 +441,7 @@ Function Invoke-PostBotTestServerClient {
                 }
               }
               {$_.StartsWith("~S")} {
-                #Server Shutdown
+                # Server Shutdown
                 $TcpClient.Close()
                 $ClientConnection.user.PowerShell.EndInvoke($ClientConnections.user.Job)
                 $ClientConnection.user.PowerShell.Runspace.Close()
@@ -451,9 +453,9 @@ Function Invoke-PostBotTestServerClient {
               }
               {$_.StartsWith("~Z")} {
                 [xml]$SubjectListXML = '<subjects xmlns=""><subject name="Lobby" subjecttype="room" id="-1" /></subjects>'
-                #List of connected users
+                # List of connected users
                 $online = (($_).SubString(2) -split "~~")
-                #Add online users to window
+                # Add online users to window
                 $Online | ForEach {
                   $xmlItem = $SubjectListXML.CreateElement('subject')
                   $xmlItem.SetAttribute('name',$_)

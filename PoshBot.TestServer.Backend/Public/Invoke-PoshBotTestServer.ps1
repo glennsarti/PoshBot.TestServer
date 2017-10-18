@@ -46,7 +46,6 @@ Function Invoke-PostBotTestServer {
     # Timer event to track client connections and remove disconnected clients
     $NewConnectionTimer = Register-ObjectEvent -SourceIdentifier MonitorClientConnection -InputObject $Timer -EventName Elapsed -Action {
       try {
-#Write-Host "Remove!!"
         While ($RemoveQueue.count -ne 0) {
           $user = $RemoveQueue.Dequeue()
           ##Close down the runspace
@@ -152,6 +151,16 @@ Function Invoke-PostBotTestServer {
                   Out-File -Inputobject ("{0} >> {1}: {2}" -f (Get-Date).ToString(),$split[0],$split[1]) -FilePath $EnableLogging -Append
                 }
               }
+            }
+            {$_.Startswith("~A")} {
+              # Add reaction
+              # ~A<Username>~~MsgID~~<ReactionType>
+              Write-Host ("{0} >> Add Reaction." -f (Get-Date).ToString())
+            }
+            {$_.Startswith("~R")} {
+              # Add reaction
+              # ~R<Username>~~MsgID~~<ReactionType>
+              Write-Host ("{0} >> Remove Reaction." -f (Get-Date).ToString())
             }
             {$_.Startswith("~D")} {
               #Disconnect
