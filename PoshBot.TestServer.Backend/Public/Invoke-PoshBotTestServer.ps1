@@ -130,6 +130,7 @@ Function Invoke-PostBotTestServer {
     $IncomingMessageTimer = Register-ObjectEvent -SourceIdentifier IncomingMessageTimer -InputObject $Timer -EventName Elapsed -Action {
       While ($MessageQueue.Count -ne 0) {
         $Message = $MessageQueue.dequeue()
+        $MessageID = (New-GUID).ToString().Replace('-','').ToLower()
         # This could cause issues (When a socket is in a bad state, somehow empty messages come through)
         #if ($message -eq '') { break; }
         try {
@@ -185,7 +186,7 @@ Function Invoke-PostBotTestServer {
           If ($directMessage) {
             $Broadcast = $Clienthash[$directMessage]
             $broadcastStream = $broadcast.GetStream()
-            $string = $Message
+            $string = '!' + $MessageID + '!' + $Message
             $broadcastbyte = ([text.encoding]::ASCII).GetBytes($String)
             $broadcastStream.Write($broadcastbyte,0,$broadcastbyte.Length)
             $broadcastStream.Flush()
@@ -196,7 +197,7 @@ Function Invoke-PostBotTestServer {
               $Broadcast = $Clienthash[$_.Name]
               Try {
                 $broadcastStream = $broadcast.GetStream()
-                $string = $Message
+                $string = '!' + $MessageID + '!' + $Message
                 $broadcastbyte = ([text.encoding]::ASCII).GetBytes($String)
                 $broadcastStream.Write($broadcastbyte,0,$broadcastbyte.Length)
                 $broadcastStream.Flush()
@@ -276,6 +277,3 @@ Function Invoke-PostBotTestServer {
     } While (-not $Global:handle.IsCompleted)
   }
 }
-
-#Export-ModuleMember -Function Invoke-PostBotTestServer
-#Invoke-PostBotTestServer

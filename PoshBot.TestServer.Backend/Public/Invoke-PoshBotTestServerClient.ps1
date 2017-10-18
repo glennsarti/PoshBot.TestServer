@@ -368,11 +368,13 @@ Function Invoke-PostBotTestServerClient {
           [Windows.Input.InputEventHandler]{ $Global:Window.UpdateLayout() }
           If ($Messagequeue.Count -gt 0) {
             $Message = $Messagequeue.Dequeue()
-            # If a different day then when client started
-            If ($date -ne (Get-Date -Format ddMMyyyy)) {
-              $date = (Get-Date -Format ddMMyyyy)
-              #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0} " -f (Get-Date).ToShortDateString()) -ForeGround Black -Bold))
-              #$Paragraph.Inlines.Add((New-Object System.Windows.Documents.LineBreak))
+            [Console]::WriteLine("Raw Message $Message")
+            $MessageID = $null
+            if ($Message.StartsWith("!")) {
+              # The message has an ID. Extract it and send the message on for parsing.
+              $Message = $Message.Substring(1)
+              $MessageID = $Message.Substring(0,32)
+              $Message = $Message.SubString(32 + 1)
             }
             Switch ($Message) {
               {$_.Startswith("~B")} {
@@ -402,7 +404,7 @@ Function Invoke-PostBotTestServerClient {
                 $xmlItem = $tmpDoc.CreateElement('message')
                 $xmlItem.SetAttribute('timestamp', (Get-Date -UFormat '%a, %d %b %Y %H:%M:%S'))
                 $xmlItem.SetAttribute('from',$split[0])
-                $xmlItem.SetAttribute('id','???')
+                $xmlItem.SetAttribute('id',$MessageID)
                 $xmlItem.InnerText = $split[1]
                 $tmpDoc.messages.AppendChild($xmlItem) | Out-Null
                 $Script:WindowMessagesXML.Document = $tmpDoc

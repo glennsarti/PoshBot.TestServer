@@ -36,11 +36,13 @@ class TestServerBackend : Backend {
 
   # Add a reaction to an existing chat message
   [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+    write-warning "Add reaction to message $($Message.Id)"
     # TODO
   }
 
   # Add a reaction to an existing chat message
   [void]RemoveReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
+    write-warning "Remove reaction to message $($Message.Id)"
     # TODO
   }
 
@@ -62,7 +64,19 @@ class TestServerBackend : Backend {
     while ($this.Connection.MessageAvailable()) {
       $rawMessage = $this.Connection.GetNextMessage()
       write-warning "Raw messages is $rawMessage"
+      $MessageID = $null
+      if ($rawMessage.StartsWith("!")) {
+        # The message has an ID. Extract it and send the message on for parsing.
+        $rawMessage = $rawMessage.Substring(1)
+        $MessageID = $rawMessage.Substring(0,32)
+        $rawMessage = $rawMessage.SubString(32 + 1)
+      }
 
+      $msgOut = [Message]::new()
+      $msgOut.Id = $MessageID
+      $msgOut.RawMessage = $rawMessage
+      $msgOut.From = $null
+      
       Switch ($rawMessage) {
         # {$_.Startswith("~B")} {
         #   # Direct Message
@@ -85,7 +99,6 @@ class TestServerBackend : Backend {
           $data = ($_).SubString(2)
           $msgArgs = $data -split ("{0}" -f "~~")
 
-          $msgOut = [Message]::new()
           $msgOut.Type = [MessageType]::Message
           $msgOut.From = $msgArgs[0] # TODO Should be using IDs not names here
           $msgOut.FromName = $msgArgs[0]
@@ -131,10 +144,10 @@ class TestServerBackend : Backend {
 
       # Ignore messages from ourselves
       if ($msgOut.From -eq $this.Connection.ThisBotID()) {
-        $msgOut = $null
+        $msgOut.From = $null
       }
 
-      if ($msgOut -ne $null) { $messages.Add($msgOut) | Out-Null }
+      if ($msgOut.From -ne $null) { $messages.Add($msgOut) | Out-Null }
     }
     # Implement logic to receive a message from the
     # chat network using network-specific APIs.
