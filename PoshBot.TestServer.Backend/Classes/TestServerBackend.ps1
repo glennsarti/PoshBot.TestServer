@@ -37,13 +37,23 @@ class TestServerBackend : Backend {
   # Add a reaction to an existing chat message
   [void]AddReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
     write-warning "Add reaction to message $($Message.Id)"
-    # TODO
+    # ~A<Username>~~MsgID~~<ReactionType>
+    $OutboundMessage = "~A$($this.BotId)~~$($Message.ID)~~$($Type.ToString())"
+    $data = [text.Encoding]::Ascii.GetBytes($OutboundMessage)
+    $stream = $this.Connection.TcpClient.GetStream()
+    $stream.Write($data,0,$data.length)
+    $stream.Flush()
   }
 
   # Add a reaction to an existing chat message
   [void]RemoveReaction([Message]$Message, [ReactionType]$Type, [string]$Reaction) {
     write-warning "Remove reaction to message $($Message.Id)"
-    # TODO
+    # ~R<Username>~~MsgID~~<ReactionType>
+    $OutboundMessage = "~R$($this.BotId)~~$($Message.ID)~~$($Type.ToString())"
+    $data = [text.Encoding]::Ascii.GetBytes($OutboundMessage)
+    $stream = $this.Connection.TcpClient.GetStream()
+    $stream.Write($data,0,$data.length)
+    $stream.Flush()
   }
 
   # Send a ping on the chat network
