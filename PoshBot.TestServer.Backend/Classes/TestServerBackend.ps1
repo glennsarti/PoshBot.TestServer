@@ -188,17 +188,28 @@ class TestServerBackend : Backend {
       # }      
 
       $messageText = ''
+      $messageType = 'M'
+      $messageColour = ''
       switch -Regex ($customResponse.PSObject.TypeNames[0]) {
         '(.*?)PoshBot\.Card\.Response' {
 Write-Warning 'Custom response is [PoshBot.Card.Response]'
           $this.LogDebug('Custom response is [PoshBot.Card.Response]')
-          $messageText = $customResponse.Text
+
+          $messageColour = $customResponse.Color.Replace('#','') + '!'
+          $messageType = 'N'
+
+          $messageText = $customResponse.Title + "`n`n"
+          if ($Response.ThumbnailUrl -ne $null) { $messageText = $messageText + 'Thumbnail: ' + $customResponse.ThumbnailUrl + "`n"}
+          if ($Response.ImageUrl  -ne $null) { $messageText = $messageText + 'Image: ' + $customResponse.ImageUrl + "`n"}
+          if ($Response.LinkUrl   -ne $null) { $messageText = $messageText + 'Link: ' + $customResponse.LinkUrl  + "`n"}
+          $messageText = $messageText + $customResponse.Text
           break
         }
         '(.*?)PoshBot\.Text\.Response' {
 Write-Warning 'Custom response is [PoshBot.Text.Response]'
           $this.LogDebug('Custom response is [PoshBot.Text.Response]')
           $messageText = $customResponse.Text
+          if ($customResponse.AsCode) { $messageType = 'O' }
           break
         }
         '(.*?)PoshBot\.File\.Upload' {
@@ -209,7 +220,7 @@ Write-Warning '(.*?)PoshBot\.File\.Upload'
         }
       }
 
-      $Message = "~M{0}{1}{2}" -f ($this.BotId), "~~", ($messageText)
+      $Message = "~{0}{1}{2}{3}{4}" -f ($messageType), ($messageColour), ($this.BotId), "~~", ($messageText)
       $data = [text.Encoding]::Ascii.GetBytes($Message)
       $stream.Write($data,0,$data.length)
       $stream.Flush()

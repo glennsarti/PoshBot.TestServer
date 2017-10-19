@@ -139,7 +139,10 @@ Function Invoke-PostBotTestServerClient {
                     <Label Padding="5,1,5,1" Content="{Binding XPath=@timestamp}" />
                   </StackPanel>
 
-                  <TextBlock Padding="5,1,5,1" Grid.Row="1" TextWrapping="Wrap" Text="{Binding XPath=.}"/>
+                  <TextBlock Padding="5,1,5,1" Grid.Row="1" TextWrapping="Wrap"
+                             Text="{Binding XPath=.}"
+                             FontFamily="{Binding XPath=@fontfamily}"
+                             Background="{Binding XPath=@background}"/>
 
                   <ItemsControl ItemsSource="{Binding XPath=reaction}" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top">
                     <ItemsControl.ItemTemplate>
@@ -356,9 +359,15 @@ Function Invoke-PostBotTestServerClient {
                 #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}: " -f $split[0]) -ForeGround Black -Bold))
                 #$Paragraph.Inlines.Add((New-ChatMessage -Message ("{0}" -f $split[1]) -ForeGround Blue))
               }
-              {$_.Startswith("~M")} {
+              {$_.Startswith("~M") -or $_.Startswith("~N") -or $_.Startswith("~O")} {
                 # Message
+                $MessageType = $_.SubString(1,1)
+                $MessageColour = $null
                 $data = ($_).SubString(2)
+                if ($MessageType -eq 'N') {
+                  $MessageColour = $data.SubString(0,6)
+                  $data =$data.SubString(6 + 1)
+                }
                 $split = $data -split ("{0}" -f "~~")
 
                 $tmpDoc = [xml]($Script:WindowMessagesXML.Document.OuterXml)
@@ -367,6 +376,12 @@ Function Invoke-PostBotTestServerClient {
                 $xmlItem.SetAttribute('from',$split[0]) | Out-Null
                 $xmlItem.SetAttribute('id',$MessageID) | Out-Null
                 $xmlItem.InnerText = $split[1]
+                if ($MessageType -eq 'O') {
+                  $xmlItem.SetAttribute('fontfamily','Consolas') | Out-Null
+                }
+                if ($MessageColour -ne $null) {
+                  $xmlItem.SetAttribute('background','#' + $MessageColour) | Out-Null
+                }
                 $tmpDoc.messages.AppendChild($xmlItem) | Out-Null
                 $Script:WindowMessagesXML.Document = $tmpDoc
               }

@@ -135,8 +135,10 @@ Function Invoke-PostBotTestServer {
         try {
           $directMessage = $false
           Switch ($Message) {
-            {$_.Startswith("~M")} {
-              #Message
+            {$_.Startswith("~M") -or $_.Startswith("~N") -or $_.Startswith("~O")} {
+              # Message = M
+              # Card Response = N
+              # Text Response = O
               $data = ($_).SubString(2)
               $split = $data -split ("{0}" -f "~~")
               If ($split[1].startswith("@")) {
@@ -210,6 +212,12 @@ Function Invoke-PostBotTestServer {
                 $broadcastbyte = ([text.encoding]::ASCII).GetBytes($String)
                 $broadcastStream.Write($broadcastbyte,0,$broadcastbyte.Length)
                 $broadcastStream.Flush()
+
+                # $string = "~NFF0000!Human~~This is a CardResponse"
+                # $broadcastbyte = ([text.encoding]::ASCII).GetBytes($String)
+                # $broadcastStream.Write($broadcastbyte,0,$broadcastbyte.Length)
+                # $broadcastStream.Flush()
+
               }
               catch {
                 $ErrorMessage = $_.Exception.Message
