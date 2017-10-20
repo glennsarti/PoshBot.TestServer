@@ -110,7 +110,7 @@ Function Invoke-PostBotTestServerClient {
 
     <GridSplitter Width="5" Grid.Column='1' Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
 
-    <ScrollViewer Grid.Column='2' Grid.Row="0" Visibility="Visible"
+    <ScrollViewer x:Name="scrollMessages" Grid.Column='2' Grid.Row="0" Visibility="Visible"
       VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
       <ItemsControl x:Name="MessageList" DataContext="{DynamicResource Messages}" ItemsSource="{Binding XPath=message}">
         <ItemsControl.ItemTemplate>
@@ -217,7 +217,8 @@ Function Invoke-PostBotTestServerClient {
       $DisconnectButton = $Window.FindName('Disconnect_btn')
       $Username_txt = $Window.FindName('username_txt')
       $Inputbox_txt = $Window.FindName('Input_txt')
-
+      $Script:scrollMessages = $Window.FindName('scrollMessages')
+      
       #Connect
       $ConnectButton.Add_Click({
         # Get Server IP
@@ -333,7 +334,7 @@ Function Invoke-PostBotTestServerClient {
         #Add event per tick
         $timer.Add_Tick({
           [Windows.Input.InputEventHandler]{ $Global:Window.UpdateLayout() }
-          If ($Messagequeue.Count -gt 0) {
+          While ($Messagequeue.Count -gt 0) {
             $Message = $Messagequeue.Dequeue()
             [Console]::WriteLine("Raw Message $Message")
             $MessageID = $null
@@ -387,6 +388,7 @@ Function Invoke-PostBotTestServerClient {
                 }
                 $tmpDoc.messages.AppendChild($xmlItem) | Out-Null
                 $Script:WindowMessagesXML.Document = $tmpDoc
+                $Script:scrollMessages.ScrollToBottom()
               }
               {$_.Startswith("~A")} {
                 # Add a reaction to a message
@@ -410,6 +412,7 @@ Function Invoke-PostBotTestServerClient {
                     $reactNode.AppendChild($userReactNode) | Out-Null
                   }
                   $Script:WindowMessagesXML.Document = $tmpDoc
+                  $Script:scrollMessages.ScrollToBottom()
                 }
               }
               {$_.Startswith("~R")} {
@@ -430,6 +433,7 @@ Function Invoke-PostBotTestServerClient {
                         $reactNode.ParentNode.RemoveChild($reactNode) | Out-Null
                       }
                       $Script:WindowMessagesXML.Document = $tmpDoc
+                      $Script:scrollMessages.ScrollToBottom()
                     }
                   }
                 }
