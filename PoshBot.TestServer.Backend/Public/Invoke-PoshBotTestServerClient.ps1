@@ -95,16 +95,14 @@ Function Invoke-PostBotTestServerClient {
       VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
       <ItemsControl x:Name="SubjectList" DataContext="{DynamicResource SubjectList}" ItemsSource="{Binding XPath=subject}">
         <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <!-- User/Room List -->
-            <Border
-              Margin="2" Padding="2"
-              BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
-              BorderThickness="1">
-
-              <TextBlock Padding="1" TextWrapping="Wrap" Text="{Binding XPath=@name}"/>
-            </Border>
-
+        <DataTemplate>
+          <!-- User/Room List -->
+          <Button
+            Margin="2" Padding="2"
+            BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
+            BorderThickness="1"
+            Tag="{Binding XPath=@name}" x:Name="butSelectSubject" Content="{Binding XPath=@name}"
+            HorizontalContentAlignment="Left" />
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
@@ -145,6 +143,11 @@ Function Invoke-PostBotTestServerClient {
                              Background="{Binding XPath=@background}"/>
 
                   <ItemsControl ItemsSource="{Binding XPath=reaction}" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
                         <Border Padding="1" Margin="2" BorderThickness="1"  BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
